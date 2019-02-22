@@ -1,0 +1,205 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"location": {
+			"type": "string",
+			"allowedValues": ["westeurope", "northeurope", "eastus", "westus", "australiaeast"]
+		},
+		"VirtualMachineUsername": {
+			"type": "string"
+		},
+		"VirtualMachinePassword": {
+			"type": "securestring"
+		}
+	},
+	"variables": {
+		"nsgId": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', 'iiot-lab-nsg')]",
+		"vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', 'iiot-lab-vnet')]",
+		"subnetRef": "[concat(variables('vnetId'), '/subnets/', 'default')]"
+	},
+	"resources": [{
+			"name": "iiot-lab-networkInterface",
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2018-04-01",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[variables('nsgId')]",
+				"[variables('vnetId')]",
+				"[concat('Microsoft.Network/publicIpAddresses/', 'iiot-lab-ip')]"
+			],
+			"properties": {
+				"ipConfigurations": [{
+						"name": "ipconfig1",
+						"properties": {
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							},
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIpAddress": {
+								"id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', 'iiot-lab-ip')]"
+							}
+						}
+					}
+				],
+				"networkSecurityGroup": {
+					"id": "[variables('nsgId')]"
+				}
+			}
+		}, {
+			"name": "iiot-lab-nsg",
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"apiVersion": "2018-08-01",
+			"location": "[parameters('location')]",
+			"properties": {
+				"securityRules":
+				[{
+						"name": "SSH",
+						"properties": {
+							"priority": 300,
+							"protocol": "Tcp",
+							"access": "Allow",
+							"direction": "Inbound",
+							"sourceAddressPrefix": "*",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*",
+							"destinationPortRange": "22"
+						}
+					}
+				]
+
+			}
+		}, {
+			"name": "iiot-lab-vnet",
+			"type": "Microsoft.Network/virtualNetworks",
+			"apiVersion": "2018-08-01",
+			"location": "[parameters('location')]",
+			"properties": {
+				"addressSpace": {
+					"addressPrefixes": [
+						"10.1.9.0/24"
+					]
+				},
+				"subnets": [{
+						"name": "default",
+						"properties": {
+							"addressPrefix": "10.1.9.0/24"
+						}
+					}
+				]
+			}
+		}, {
+			"name": "iiot-lab-ip",
+			"type": "Microsoft.Network/publicIpAddresses",
+			"apiVersion": "2018-08-01",
+			"location": "[parameters('location')]",
+			"properties": {
+				"publicIpAllocationMethod": "Dynamic"
+			},
+			"sku": {
+				"name": "Basic"
+			}
+		}, {
+			"name": "iiot-lab-edge-vm",
+			"type": "Microsoft.Compute/virtualMachines",
+			"apiVersion": "2018-06-01",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[concat('Microsoft.Network/networkInterfaces/', 'iiot-lab-networkInterface')]"
+			],
+			"properties": {
+				"hardwareProfile": {
+					"vmSize": "Standard_B1ms"
+				},
+				"storageProfile": {
+					"osDisk": {
+						"createOption": "FromImage",
+						"managedDisk": {
+							"storageAccountType": "StandardSSD_LRS"
+						}
+					},
+					"imageReference": {
+						"publisher": "microsoft_iot_edge",
+						"offer": "iot_edge_vm_ubuntu",
+						"sku": "ubuntu_1604_edgeruntimeonly",
+						"version": "1.0.1"
+					}
+				},
+				"networkProfile": {
+					"networkInterfaces": [{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', 'iiot-lab-networkInterface')]"
+						}
+					]
+				},
+				"osProfile": {
+					"computerName": "iiot-lab-edge-vm",
+					"adminUsername": "[parameters('VirtualMachineUsername')]",
+					"adminPassword": "[parameters('VirtualMachinePassword')]"
+				}
+			},
+			"plan": {
+				"name": "ubuntu_1604_edgeruntimeonly",
+				"publisher": "microsoft_iot_edge",
+				"product": "iot_edge_vm_ubuntu"
+			}
+		}, {
+			"apiVersion": "2018-12-01-preview",
+			"type": "Microsoft.Devices/IotHubs",
+			"name": "[concat('iiot-lab-hub-', uniqueString(resourceGroup().id))]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"eventHubEndpoints": {
+					"events": {
+						"retentionTimeInDays": 1,
+						"partitionCount": 4
+					}
+				},
+				"features": "None"
+			},
+			"sku": {
+				"name": "S1",
+				"capacity": 1
+			}
+		}, {
+			"type": "Microsoft.ContainerInstance/containerGroups",
+			"name": "opc-server",
+			"apiVersion": "2018-04-01",
+			"location": "[parameters('location')]",
+			"properties": {
+				"containers": [{
+						"name": "opc-server-container",
+						"properties": {
+							"image": "mcr.microsoft.com/iotedge/opc-plc",
+							"command": [
+								"dotnet",
+								"/app/opcplc.dll",
+								"--autoaccept"
+							],
+							"ports": [{
+									"protocol": "TCP",
+									"port": 50000
+								}
+							],
+							"resources": {
+								"requests": {
+									"memoryInGB": 0.5,
+									"cpu": 1
+								}
+							}
+						}
+					}
+				],
+				"restartPolicy": "Always",
+				"ipAddress": {
+					"ports": [{
+							"protocol": "TCP",
+							"port": 50000
+						}
+					],
+					"type": "Public"
+				},
+				"osType": "Linux"
+			}
+		}
+	]
+}
