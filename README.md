@@ -142,7 +142,7 @@ your first IoT Edge device and gaining insights into the produced data.
 
         ![](./media/image13.png)
 
-    -   Open an SSH client, for instance **PuTTY**
+    -   Open a SSH client of your choice, for instance a built-in one or **PuTTY** on Windows
 
     -   Enter the IP and click *Open*
 
@@ -155,15 +155,20 @@ your first IoT Edge device and gaining insights into the produced data.
 
     -   To configure the Edge runtime, there is a script pre-installed      that comes with the VM. To execute it, run (put in your             connection string from the previous step):
 
-        sudo /etc/iotedge/configedge.sh \"**your-connectionstring**\"
+        *sudo /etc/iotedge/configedge.sh \"**your-connectionstring**\"*
         
-        *(Do not forget the double quotes around the connection string!)*
+        (Do not forget the double quotes around the connection string!)
 
-        ![](./media/image17.tmp)
+        ![](./media/image17.png)
+
+        ![](./media/image54.png)
 
     -   This will set the connection string and restart the Edge runtime.
         This will start to pull the Edge Agent docker container from the
-        public Microsoft Container Registry (MCR).
+        public Microsoft Container Registry (MCR).  
+        For debugging you can retrieve the log of the Edge daemon using *journalctl -u iotedge --no-pager*     
+
+        ![](./media/image55.png)
 
     -   While this is running, we can continue with the next step and come
         back to our VM in a minute. Leave PuTTY open in the background.
@@ -409,7 +414,12 @@ your first IoT Edge device and gaining insights into the produced data.
 
     -   Go back to your resource group in the Azure Portal
     -   Find your Azure Container instance named *opc-server* and click on it
-    - Copy the public IP address of the container, e.g. into a Notepad
+
+        ![](./media/image52.png)
+
+    - Copy the IP address of the container, e.g. into Notepad
+
+        ![](./media/image53.png)
 
 1. **Configure published nodes**
 
@@ -423,7 +433,7 @@ your first IoT Edge device and gaining insights into the produced data.
     -   Click *Refresh* (on the top right on the page, not the browser
         refresh!) to load the current list of modules.
 
-    -   The list of modules on the bottom should show now your opc-publisher
+    -   The list of modules on the bottom should show now your **opc-publisher**
         and its status as running. Click on the module.
 
         ![](./media/image39.png)
@@ -464,32 +474,30 @@ your first IoT Edge device and gaining insights into the produced data.
 
     -   Then hit *Invoke Method* on the top
 
-    What happens here is that you subscribe to specific nodes of the
-    information model of the respective OPC UA server. An information model
-    in the context of OPC UA consists of nodes and references that describes
-    the relationships and actions between those nodes. Those nodes are
-    referenced via their NodeId and can contain different information or may
-    invoke actions on the OPC UA server. In our case, the nodes we subscribe
-    to deliver data from our process in regular intervals.
+        ![](./media/image41.png)
+
+        What happens here is that you subscribe to specific nodes of the
+        information model of the respective OPC UA server. An information model
+        in the context of OPC UA consists of nodes and references that describes
+        the relationships and actions between those nodes. Those nodes are
+        referenced via their NodeId and can contain different information or may
+        invoke actions on the OPC UA server. In our case, the nodes we subscribe
+        to deliver data from our process in regular intervals.
 
     -   In the result window on the bottom you should see a similar output,
     confirming that the new nodes have been configured in the
     opc-publisher:
 
-        ![](./media/image41.tmp)
+        ![](./media/image56.png)
 
     -   Now our publisher is all configured and ready-to-go. Switch to your
     PuTTY window and you should see a couple of new messages that the
     publisher is trying to connect to the OPC server.
 
         ![](./media/image42.png)
+        ![](./media/image57.png)
 
-    -   The connection will not be established just yet, as the OPC server
-        still needs to accept your module's certificate as a security means.
-        **Please let your proctors know, that you have reached this step**
-        and they will accept your module certificate on the OPC server.
-
-    -   Once the OPC server lets your module connect, you should see more
+    -   Once the connection is established, you should see more
         log messages from the publisher output. But we don't need to rely on
         those. Instead we can directly see our data in TSI.
 
