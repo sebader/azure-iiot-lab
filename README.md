@@ -45,7 +45,7 @@ your first IoT Edge device and gaining insights into the produced data.
     As a first step, we deploy the provided ARM (Azure Resource Manager) 
     template for this lab. This includes a couple of resources which will be
     provisioned for you, ready to use in the lab. We rather want to focus
-    on certain topics around IIoT than spending our time deploying virtual machines.
+    on certain topics around IIoT than spending our time deploying virtual machines...
 	
     *   To start the deployment, click on this button (or better: right-click and open in new tab):
 
@@ -66,10 +66,10 @@ your first IoT Edge device and gaining insights into the produced data.
   
         The ARM template deploys the following resources:
         * 1 IoT Hub (S1 tier)
-        * 1 pre-configured IoT Edge Virtual Machine. You can find this
+        * 1 pre-configured IoT Edge Virtual Machine (Size B1ms). You can find this
         in the Azure Marketplace if you search for 
         "Ubuntu Server 16.04 LTS + Azure IoT Edge runtime"
-        * 1 OPC UA Sample server running in an Azure Container Instance
+        * 1 OPC UA sample server running in an Azure Container Instance
 
     *   Click on *Deploy* and wait until all resources are ready. This should only take a few minutes.
 
