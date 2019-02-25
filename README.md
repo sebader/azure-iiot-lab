@@ -49,20 +49,23 @@ your first IoT Edge device and gaining insights into the produced data.
 	
     *   To start the deployment, click on this button (or better: right-click and open in new tab):
 
-        [![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://azuredeploy.net/)
+        <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsebader%2Fazure-iiot-lab%2Fmaster%2Fazuredeploy.json" target="_blank">
+            <img src="http://azuredeploy.net/deploybutton.png"/>
+        </a>
 
-        *Note: Instead of using the Deploy to Azure service, you can also manually deploy the [ARM template](azuredeploy.json), for instance through the Azure [Portal](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-portal#deploy-resources-from-custom-template) or [CLI](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-cli#deploy-external-template)*
+        *Note: Instead of using the Deploy to Azure button, you can also manually deploy the [ARM template](azuredeploy.json), for instance through the Azure [Portal](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-portal#deploy-resources-from-custom-template) or [CLI](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-cli#deploy-external-template)*
 	
     *   Use your username and password to log into your Azure subscription.
 
-    *   Select your Directory, Subscription and fill out the parameter fields. It is recommended to create a new resource group for this lab. This makes it easier to dispose of all the created resources after you are done.  
+    *   Select your subscription and fill out the parameter fields. It is recommended to create a new resource group for this lab. This makes it easier to dispose of all the created resources after you are done.  
     *Note: The list of available Azure regions for this template is currently limited as there is a dependency on a feature in Azure Container Instances (VNet support).*
 
-        ![](./media/image49.png)
+        ![](./media/image58.png)
     
-    *   Click on *Next* and review the resources to be created
+    *   Click on *Purchase* and wait until all the resources have been provisioned for you.
 
-        ![](./media/image50.png)
+    
+        ![](./media/image59.png)
   
         The ARM template deploys the following resources:
         * 1 IoT Hub (S1 tier)
@@ -71,11 +74,9 @@ your first IoT Edge device and gaining insights into the produced data.
         "Ubuntu Server 16.04 LTS + Azure IoT Edge runtime"
         * 1 OPC UA sample server running in an Azure Container Instance
 
-    *   Click on *Deploy* and wait until all resources are ready. This should only take a few minutes.
+    *   Once this is finished, click on the *Go to resource group* link. This will take you directly into the newly created resource group.
 
-        ![](./media/image51.png)
-
-        Once this is finished, click on the *Manage your resources* link. This will take you directly into the Azure Portal
+        ![](./media/image60.png)     
   
 
 1. **Explore resources**
