@@ -4,7 +4,10 @@
 	"parameters": {
 		"location": {
 			"type": "string",
-			"allowedValues": ["westeurope", "northeurope", "eastus", "westus", "australiaeast"]
+			"allowedValues": ["westeurope", "northeurope", "eastus", "westus", "australiaeast"],
+			"metadata": {
+				"description": "Azure region to deploy the solution into. Currently limited by the number of regions that support ACI and virtual networks."
+			  }
 		},
 		"VirtualMachineUsername": {
 			"type": "string"

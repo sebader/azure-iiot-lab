@@ -50,7 +50,7 @@ your first IoT Edge device and gaining insights into the produced data.
     *   To start the deployment, click on this button (or better: right-click and open in new tab):
 
         <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsebader%2Fazure-iiot-lab%2Fmaster%2Fazuredeploy.json" target="_blank">
-            <img src="http://azuredeploy.net/deploybutton.png"/>
+            <img src="media/deploybutton.svg"/>
         </a>
 
         *Note: Instead of using the Deploy to Azure button, you can also manually deploy the [ARM template](azuredeploy.json), for instance through the Azure [Portal](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-portal#deploy-resources-from-custom-template) or [CLI](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-cli#deploy-external-template)*
