@@ -21,7 +21,7 @@ visualize data again.
 The following architecture diagram gives an overview about what you will
 deploy in the lab.
 
-![](./media/image2.png)
+![](./media/lab_architecture.svg)
 
 For the purpose of this lab, a simulated PLC providing OPC UA server is
 running in a Docker container running in an Azure Container Instance. But you can just as easily exchange this for any other OPC UA server.  
