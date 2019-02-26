@@ -4,30 +4,38 @@
 	"parameters": {
 		"location": {
 			"type": "string",
-			"allowedValues": ["westeurope", "northeurope", "eastus", "westus", "australiaeast"],
+			"allowedValues": [
+				"westeurope",
+				"northeurope",
+				"eastus",
+				"westus",
+				"australiaeast"
+			],
 			"metadata": {
 				"description": "Azure region to deploy the solution into. Currently limited by the number of regions that support ACI and virtual networks."
-			  }
+			}
 		},
 		"VirtualMachineUsername": {
 			"type": "string",
 			"metadata": {
 				"description": "Username for the IoT Edge virtual machine"
-			  }
+			}
 		},
 		"VirtualMachinePassword": {
 			"type": "securestring",
 			"metadata": {
 				"description": "Password for the IoT Edge virtual machine"
-			  }
+			}
 		}
 	},
 	"variables": {
 		"nsgId": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', 'iiot-lab-nsg')]",
 		"vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', 'iiot-lab-vnet')]",
-		"subnetRef": "[concat(variables('vnetId'), '/subnets/', 'default')]"
+		"subnetRef": "[concat(variables('vnetId'), '/subnets/', 'vm-subnet')]",
+		"networkProfileId": "[resourceId('Microsoft.Network/networkProfiles', 'iiot-lab-vnet-networkprofile')]"
 	},
-	"resources": [{
+	"resources": [
+		{
 			"name": "iiot-lab-networkInterface",
 			"type": "Microsoft.Network/networkInterfaces",
 			"apiVersion": "2018-04-01",
@@ -38,7 +46,8 @@
 				"[concat('Microsoft.Network/publicIpAddresses/', 'iiot-lab-ip')]"
 			],
 			"properties": {
-				"ipConfigurations": [{
+				"ipConfigurations": [
+					{
 						"name": "ipconfig1",
 						"properties": {
 							"subnet": {
@@ -55,14 +64,15 @@
 					"id": "[variables('nsgId')]"
 				}
 			}
-		}, {
+		},
+		{
 			"name": "iiot-lab-nsg",
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"apiVersion": "2018-08-01",
 			"location": "[parameters('location')]",
 			"properties": {
-				"securityRules":
-				[{
+				"securityRules": [
+					{
 						"name": "SSH",
 						"properties": {
 							"priority": 300,
@@ -76,9 +86,9 @@
 						}
 					}
 				]
-
 			}
-		}, {
+		},
+		{
 			"name": "iiot-lab-vnet",
 			"type": "Microsoft.Network/virtualNetworks",
 			"apiVersion": "2018-08-01",
@@ -86,18 +96,62 @@
 			"properties": {
 				"addressSpace": {
 					"addressPrefixes": [
-						"10.1.9.0/24"
+						"10.1.8.0/22"
 					]
 				},
-				"subnets": [{
-						"name": "default",
+				"subnets": [
+					{
+						"name": "vm-subnet",
 						"properties": {
-							"addressPrefix": "10.1.9.0/24"
+							"addressPrefix": "10.1.8.0/24"
+						}
+					},
+					{
+						"name": "aci-subnet",
+						"properties": {
+							"addressPrefix": "10.1.9.0/24",
+							"delegations": [
+								{
+									"name": "DelegationService",
+									"properties": {
+										"serviceName": "Microsoft.ContainerInstance/containerGroups"
+									}
+								}
+							]
 						}
 					}
 				]
 			}
-		}, {
+		},
+		{
+			"name": "iiot-lab-vnet-networkprofile",
+			"type": "Microsoft.Network/networkProfiles",
+			"apiVersion": "2018-07-01",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[variables('vnetId')]"
+			],
+			"properties": {
+				"containerNetworkInterfaceConfigurations": [
+					{
+						"name": "iiot-lab-container-network-interface",
+						"properties": {
+							"ipConfigurations": [
+								{
+									"name": "iiot-lab-container-ipconfiguration",
+									"properties": {
+										"subnet": {
+											"id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'iiot-lab-vnet', 'aci-subnet')]"
+										}
+									}
+								}
+							]
+						}
+					}
+				]
+			}
+		},
+		{
 			"name": "iiot-lab-ip",
 			"type": "Microsoft.Network/publicIpAddresses",
 			"apiVersion": "2018-08-01",
@@ -108,7 +162,8 @@
 			"sku": {
 				"name": "Basic"
 			}
-		}, {
+		},
+		{
 			"name": "iiot-lab-edge-vm",
 			"type": "Microsoft.Compute/virtualMachines",
 			"apiVersion": "2018-06-01",
@@ -135,7 +190,8 @@
 					}
 				},
 				"networkProfile": {
-					"networkInterfaces": [{
+					"networkInterfaces": [
+						{
 							"id": "[resourceId('Microsoft.Network/networkInterfaces', 'iiot-lab-networkInterface')]"
 						}
 					]
@@ -151,7 +207,8 @@
 				"publisher": "microsoft_iot_edge",
 				"product": "iot_edge_vm_ubuntu"
 			}
-		}, {
+		},
+		{
 			"apiVersion": "2018-12-01-preview",
 			"type": "Microsoft.Devices/IotHubs",
 			"name": "[concat('iiot-lab-hub-', uniqueString(resourceGroup().id))]",
@@ -169,13 +226,18 @@
 				"name": "S1",
 				"capacity": 1
 			}
-		}, {
+		},
+		{
 			"type": "Microsoft.ContainerInstance/containerGroups",
 			"name": "opc-server",
-			"apiVersion": "2018-04-01",
+			"apiVersion": "2018-07-01",
 			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[variables('networkProfileId')]"
+			],
 			"properties": {
-				"containers": [{
+				"containers": [
+					{
 						"name": "opc-server-container",
 						"properties": {
 							"image": "mcr.microsoft.com/iotedge/opc-plc",
@@ -184,7 +246,8 @@
 								"/app/opcplc.dll",
 								"--autoaccept"
 							],
-							"ports": [{
+							"ports": [
+								{
 									"protocol": "TCP",
 									"port": 50000
 								}
@@ -199,13 +262,8 @@
 					}
 				],
 				"restartPolicy": "Always",
-				"ipAddress": {
-					"ports": [{
-							"protocol": "TCP",
-							"port": 50000
-						}
-					],
-					"type": "Public"
+				"networkProfile": {
+					"Id": "[variables('networkProfileId')]"
 				},
 				"osType": "Linux"
 			}

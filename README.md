@@ -23,8 +23,10 @@ deploy in the lab.
 
 ![](./media/image2.png)
 
-For the purpose of this lab, the simulated factory OPC UA server is
-provided in a Docker container running in an Azure Container Instance. But you can just as easily exchange this for any other OPC UA server.
+For the purpose of this lab, a simulated PLC providing OPC UA server is
+running in a Docker container running in an Azure Container Instance. But you can just as easily exchange this for any other OPC UA server.  
+The simulated PLC and the IoT Edge Gateway are both part of a private virtual network and thus mimics a real-life scenario where the PLCs on a factory shopfloor won't have any connectivity outside of the factory network. The IoT Edge  therefore provides a secure gateway mechanism to connect the PLC to the IoT Hub in Azure.  
+On the Azure side, we will set up a Time Series Insights instance to quickly gather first insights into the data.
 
 ### **Disclaimer**: This lab requires an Azure Subscription. A couple of resources will be created which do incur some small cost. We recommend to delete the resources when you are finished with the lab and don't need them anymore. If you do not have an Azure Subscription yet, you can also do this lab with a [free trial subscription]( https://azure.microsoft.com/en-us/free/)
 
